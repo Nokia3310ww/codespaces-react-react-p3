@@ -1,5 +1,6 @@
 import './Shop.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios'
 function Item(props){
     return (<div key={props.id} onClick={()=>props.callback(props)}>
         <img src={props.img} width={200} height={200}/><br/>
@@ -9,39 +10,45 @@ function Item(props){
     </div>);
 }
 export default function Shop(){
-    const products=[
-        {id:0,name:"Notebook Acer Swift",price:45900,img:"https://img.advice.co.th/images_nas/pic_product4/A0147295/A0147295_s.jpg"},
-        {id:1,name:"Notebook Asus Vivo",price:19900,img:"https://img.advice.co.th/images_nas/pic_product4/A0146010/A0146010_s.jpg"},
-        {id:2,name:"Notebook Lenovo Ideapad",price:32900,img:"https://img.advice.co.th/images_nas/pic_product4/A0149009/A0149009_s.jpg"},
-        {id:3,name:"Notebook MSI Prestige",price:54900,img:"https://img.advice.co.th/images_nas/pic_product4/A0149954/A0149954_s.jpg"},
-        {id:4,name:"Notebook DELL XPS",price:99900,img:"https://img.advice.co.th/images_nas/pic_product4/A0146335/A0146335_s.jpg"},
-        {id:5,name:"Notebook HP Envy",price:46900,img:"https://img.advice.co.th/images_nas/pic_product4/A0145712/A0145712_s.jpg"}];
-        const [cart,setCart]=useState([]);
-        function addCart(item){
-         setCart([...cart,{id:item.id,name:item.name,price:item.price,img:item.img}]);
-        }
-        function removeItem(itemId) {
-            setCart(cart.filter(item => item.id !== itemId));
-        }
+    const [products,setProducts]=useState([]);
+    useEffect(()=>{
+        const URL = "https://super-acorn-qw9vrrjq6vxfvgp-5000.app.github.dev";
+        axios.get(URL+'/api/products')
+        .then(response=>{
+            setProducts(response.data);
+        })
+        .catch(error=>{
+            console.log("error");
+        })
+    }
+        
+    ,[])
+    const [cart,setCart]=useState([]);
+    function addCart(item){
+        setCart([...cart,{id:item.id,name:item.name,price:item.price,img:item.img}]);
+    }
+    function removeItem(itemId) {
+        setCart(cart.filter(item => item.id !== itemId));
+    }
     
-        function resetCart() {
-            setCart([]);
-        }
-        const productList=products.map(item=><Item {...item} callback={addCart}/>);
+    function resetCart() {
+        setCart([]);
+    }
+    const productList=products.map(item=><Item {...item} callback={addCart}/>);
 
-        const cartList = cart.map(item => (
+    const cartList = cart.map(item => (
         <li key={item.id}>
             {item.id} {item.name} {item.price}
             <button onClick={() => removeItem(item.id)}>Remove</button>
         </li>
-        ));
+    ));
         
-        const totalPrice = cart.reduce((total, item) => total + item.price, 0);
-        return (<>
+    const totalPrice = cart.reduce((total, item) => total + item.price, 0);
+    return (<>
         <div className='grid-container'>{productList}</div>
         <h1>Cart</h1>
         <ol>{cartList}</ol>
         <h2>Total Price: {totalPrice}</h2>
         <button onClick={resetCart}>Reset Cart</button>
-        </>);
+    </>);
 }
